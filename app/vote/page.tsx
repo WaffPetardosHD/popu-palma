@@ -212,41 +212,59 @@ function VoteCard({
   onClick: () => void;
   disabled: boolean;
 }) {
-  const borderCls =
-    state === "winner"
-      ? "border-green-400 scale-[1.03]"
-      : state === "loser"
-      ? "border-gray-200 opacity-50 scale-[0.97]"
-      : "border-transparent hover:border-orange-400 hover:scale-[1.02]";
+  const isWinner = state === "winner";
+  const isLoser = state === "loser";
+
+  const borderCls = isWinner
+    ? "border-green-400 scale-[1.02]"
+    : isLoser
+    ? "border-gray-200 opacity-50 scale-[0.98]"
+    : "border-transparent hover:border-orange-400 active:scale-[0.99]";
 
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`flex-1 cursor-pointer rounded-2xl bg-white shadow-md border-2 transition-all duration-200 select-none p-4 flex flex-col items-center gap-3 ${borderCls}`}
+      className={`flex-1 cursor-pointer rounded-2xl bg-white shadow-md border-2 transition-all duration-200 select-none overflow-hidden flex flex-col ${borderCls}`}
     >
-      <div className="relative">
-        <Avatar username={user.username} photoUrl={user.photo_url} size={96} />
-        {state === "winner" && eloChange !== undefined && (
-          <span className="absolute -top-1 -right-1 bg-green-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
-            +{eloChange}
-          </span>
+      {/* Foto rectangular */}
+      <div className="relative w-full" style={{ aspectRatio: "3/4" }}>
+        {user.photo_url ? (
+          <img
+            src={user.photo_url}
+            alt={user.username}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-linear-to-br from-orange-400 to-rose-500 flex items-center justify-center">
+            <span className="text-white font-black text-5xl">
+              {user.username[0].toUpperCase()}
+            </span>
+          </div>
         )}
-        {state === "loser" && eloChange !== undefined && (
-          <span className="absolute -top-1 -right-1 bg-gray-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
-            {eloChange}
+
+        {/* Overlay ganador */}
+        {isWinner && (
+          <div className="absolute inset-0 bg-green-500/10 flex items-end justify-center pb-3">
+            <span className="bg-green-500 text-white font-black text-sm px-3 py-1 rounded-full shadow">
+              ✓ Ganador
+            </span>
+          </div>
+        )}
+
+        {/* Badge ELO */}
+        {eloChange !== undefined && (
+          <span className={`absolute top-2 right-2 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow ${isWinner ? "bg-green-500" : "bg-gray-400"}`}>
+            {isWinner ? `+${eloChange}` : eloChange}
           </span>
         )}
       </div>
-      <div className="text-center">
-        <p className="font-bold text-gray-900 text-sm truncate max-w-[100px]">
-          {user.username}
-        </p>
+
+      {/* Info */}
+      <div className="px-3 py-2.5 text-center">
+        <p className="font-bold text-gray-900 text-sm truncate">{user.username}</p>
         <p className="text-xs text-gray-400">{user.elo} pts</p>
       </div>
-      {state === "winner" && (
-        <span className="text-green-500 font-semibold text-xs">Ganador</span>
-      )}
     </button>
   );
 }

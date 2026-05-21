@@ -22,13 +22,22 @@ export default function BottomNav({ user }: BottomNavProps) {
   return (
     <nav className="fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 z-50 safe-area-inset-bottom">
       <div className="max-w-lg mx-auto flex items-center justify-around h-16">
-        {/* Inicio */}
+        {/* Votar — primera pestaña */}
+        <Link
+          href="/vote"
+          className={`${base} ${isActive("/vote") ? active : inactive}`}
+        >
+          <VoteIcon active={isActive("/vote")} />
+          <span>Votar</span>
+        </Link>
+
+        {/* Ranking */}
         <Link
           href="/"
           className={`${base} ${isActive("/") ? active : inactive}`}
         >
           <HomeIcon active={isActive("/")} />
-          <span>Inicio</span>
+          <span>Ranking</span>
         </Link>
 
         {/* Buscar */}
@@ -38,15 +47,6 @@ export default function BottomNav({ user }: BottomNavProps) {
         >
           <SearchIcon active={isActive("/search")} />
           <span>Buscar</span>
-        </Link>
-
-        {/* Votar */}
-        <Link
-          href="/vote"
-          className={`${base} ${isActive("/vote") ? active : inactive}`}
-        >
-          <VoteIcon active={isActive("/vote")} />
-          <span>Votar</span>
         </Link>
 
         {/* Perfil */}
@@ -63,6 +63,23 @@ export default function BottomNav({ user }: BottomNavProps) {
         </Link>
       </div>
     </nav>
+  );
+}
+
+function VoteIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill={active ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </svg>
   );
 }
 
@@ -98,23 +115,6 @@ function SearchIcon({ active }: { active: boolean }) {
     >
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  );
-}
-
-function VoteIcon({ active }: { active: boolean }) {
-  return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill={active ? "currentColor" : "none"}
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
     </svg>
   );
 }
