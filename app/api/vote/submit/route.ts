@@ -4,6 +4,7 @@ import getDb from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { calculateElo } from "@/lib/elo";
 import { DAILY_VOTE_LIMIT } from "@/app/api/vote/remaining/route";
+import { hasUnlimitedVotes } from "@/lib/unlimited";
 
 export async function POST(request: NextRequest) {
   const session = await getSession();
@@ -17,7 +18,10 @@ export async function POST(request: NextRequest) {
 
   const db = getDb();
 
-  // Check daily limit
+  const voter = db.prepare("SELECT username FROM users WHERE id = ?").get(session.userId) as { username: string } | null;
+  const unlimited = voter ? hasUnlimitedVotes(voter.username) : false;
+
+  // Check daily limit (skip for unlimited users)
   const usedToday = (
     db
       .prepare(
@@ -26,7 +30,7 @@ export async function POST(request: NextRequest) {
       .get(session.userId) as { c: number }
   ).c;
 
-  if (usedToday >= DAILY_VOTE_LIMIT) {
+  if (!unlimited && usedToday >= DAILY_VOTE_LIMIT) {
     return NextResponse.json(
       { error: "Has agotado tus votos de hoy. ¡Vuelve mañana!", limitReached: true },
       { status: 429 }
@@ -70,7 +74,7 @@ export async function POST(request: NextRequest) {
     );
   })();
 
-  const remaining = Math.max(0, DAILY_VOTE_LIMIT - usedToday - 1);
+  const remaining = unlimited ? 9999 : Math.max(0, DAILY_VOTE_LIMIT - usedToday - 1);
 
   return NextResponse.json({
     success: true,

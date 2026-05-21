@@ -3,6 +3,7 @@ import getDb from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { getWeekStart } from "@/lib/elo";
 import { DAILY_VOTE_LIMIT } from "@/app/api/vote/remaining/route";
+import { hasUnlimitedVotes } from "@/lib/unlimited";
 
 interface Candidate {
   id: string;
@@ -21,7 +22,10 @@ export async function GET(request: NextRequest) {
 
   const db = getDb();
 
-  // Check daily limit
+  const voter = db.prepare("SELECT username FROM users WHERE id = ?").get(session.userId) as { username: string } | null;
+  const unlimited = voter ? hasUnlimitedVotes(voter.username) : false;
+
+  // Check daily limit (skip for unlimited users)
   const usedToday = (
     db
       .prepare(
@@ -30,7 +34,7 @@ export async function GET(request: NextRequest) {
       .get(session.userId) as { c: number }
   ).c;
 
-  if (usedToday >= DAILY_VOTE_LIMIT) {
+  if (!unlimited && usedToday >= DAILY_VOTE_LIMIT) {
     return NextResponse.json({ pair: null, reason: "daily_limit_reached" });
   }
 
@@ -89,6 +93,6 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     pair: { userA: chosen.a, userB: chosen.b, gender },
-    remaining: DAILY_VOTE_LIMIT - usedToday,
+    remaining: unlimited ? 9999 : DAILY_VOTE_LIMIT - usedToday,
   });
 }
