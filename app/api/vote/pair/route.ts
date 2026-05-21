@@ -16,10 +16,8 @@ export async function GET(request: NextRequest) {
   if (!session)
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-  const gender = request.nextUrl.searchParams.get("gender");
-  if (!gender || !["male", "female"].includes(gender)) {
-    return NextResponse.json({ error: "Género no válido" }, { status: 400 });
-  }
+  // Elegir género aleatoriamente (las parejas siguen siendo del mismo género)
+  const gender = Math.random() < 0.5 ? "female" : "male";
 
   const db = getDb();
 

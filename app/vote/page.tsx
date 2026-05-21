@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Avatar } from "@/components/Navbar";
 
 interface UserProfile {
   id: string;
@@ -21,7 +20,6 @@ type VoteState = "idle" | "voted";
 
 export default function VotePage() {
   const [pair, setPair] = useState<VotePair | null>(null);
-  const [gender, setGender] = useState<"male" | "female">("female");
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState(false);
   const [voteState, setVoteState] = useState<VoteState>("idle");
@@ -31,7 +29,7 @@ export default function VotePage() {
   const [limitReason, setLimitReason] = useState<string | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
 
-  const fetchPair = useCallback(async (g: "male" | "female") => {
+  const fetchPair = useCallback(async () => {
     setLoading(true);
     setNoPairs(false);
     setLimitReason(null);
@@ -39,7 +37,7 @@ export default function VotePage() {
     setWinnerId(null);
     setEloChanges(null);
     try {
-      const res = await fetch(`/api/vote/pair?gender=${g}`);
+      const res = await fetch("/api/vote/pair");
       const data = await res.json();
       if (data.pair) {
         setPair(data.pair);
@@ -59,8 +57,8 @@ export default function VotePage() {
   }, []);
 
   useEffect(() => {
-    fetchPair(gender);
-  }, [gender, fetchPair]);
+    fetchPair();
+  }, [fetchPair]);
 
   const handleVote = async (winner: UserProfile, loser: UserProfile) => {
     if (voting || voteState !== "idle") return;
@@ -92,7 +90,7 @@ export default function VotePage() {
             setNoPairs(true);
             setPair(null);
           } else {
-            fetchPair(gender);
+            fetchPair();
           }
         }, 1600);
       } else {
@@ -117,23 +115,6 @@ export default function VotePage() {
             </span>
           </div>
         )}
-      </div>
-
-      {/* Gender toggle */}
-      <div className="flex bg-white rounded-full shadow-sm border border-gray-100 p-1 gap-1 w-full max-w-xs justify-center">
-        {(["female", "male"] as const).map((g) => (
-          <button
-            key={g}
-            onClick={() => setGender(g)}
-            className={`flex-1 py-2 rounded-full text-sm font-semibold transition-all ${
-              gender === g
-                ? "bg-linear-to-r from-orange-500 to-rose-500 text-white shadow"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            {g === "female" ? "Chicas" : "Chicos"}
-          </button>
-        ))}
       </div>
 
       {/* Loading */}
@@ -172,9 +153,7 @@ export default function VotePage() {
       {/* Vote cards */}
       {!loading && pair && (
         <>
-          <p className="text-sm text-gray-400 -mb-2">
-            ¿A quién prefieres?
-          </p>
+          <p className="text-sm text-gray-400 -mb-2">¿A quién prefieres?</p>
           <div className="flex items-center gap-3 w-full">
             <VoteCard
               user={pair.userA}
